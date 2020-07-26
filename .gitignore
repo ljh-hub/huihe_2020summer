@@ -1,0 +1,4 @@
+# Project exclude paths
+/7-26Annotation_Reflection/target/
+/.idea/
+*.iml
