@@ -1,7 +1,7 @@
 # huihe_2020summer
 2020假期spring、vue学习
 
-## 1、注解和反射
+# 1、注解和反射
 ## 1.注解
 
 Java 注解（Annotation）又称 Java 标注，是 JDK5.0 引入的一种注释机制。
@@ -219,5 +219,201 @@ for(Annotation annotation :c.getAnnotations()){ //遍历类上注解
         User instance = c.newInstance(); //构造一个user对象
     }
 }
+```
+
+## 3.例子
+
+### 3.1、基于注解动态实例化对象
+
+#### 3.1.1 注解
+
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+public @interface MyAnnotation {
+    String value() default "";
+}
+```
+
+#### 3.1.2 类
+
+```java
+package com.huihe.bean;
+
+import com.huihe.annotation.MyAnnotation;
+
+public class User {
+    //Flied
+    @MyAnnotation("hxj")
+    private String username;
+
+    @MyAnnotation("123")
+    private String password;
+
+    public User(){}
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
+    //Method
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                '}';
+    }
+}
+```
+
+#### 3.1.3 测试程序
+
+```java
+@Test
+public void test3() throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+    Class<?> c = Class.forName("com.huihe.bean.User");
+    Field[] fields = c.getDeclaredFields();
+    Object instance = c.newInstance();
+    for(Field field : fields){
+        MyAnnotation annotation = field.getAnnotation(MyAnnotation.class);
+        field.setAccessible(true);
+        System.out.println(annotation.value());
+        field.set(instance, annotation.value());
+    }
+    System.out.println(instance);
+}
+```
+
+### 3.2、基于配置文件动态实例化对象
+
+#### 3.2.1 bean.properties
+
+```properties
+class=com.huihe.bean.User
+username=hxj
+password=123
+```
+
+#### 3.2.2 类 
+
+同3.1.2
+
+#### 3.2.3 测试程序
+
+```java
+@Test
+public void test4() throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+    Properties properties = new Properties();
+    InputStream inputStream = this.getClass().getResourceAsStream("/bean.properties");
+    properties.load(inputStream);
+    String clz = properties.getProperty("class", "");
+    Class<?> c = Class.forName(clz);
+    Object instance = c.newInstance();
+    for(Field field : c.getDeclaredFields()){
+        field.setAccessible(true);
+        field.set(instance, properties.getProperty(field.getName(),""));
+    }
+    System.out.println(instance);
+}
+```
+
+# Spring框架概述
+
+### 优点：
+
+1. 方便解耦，开发（Spring就是一个大工厂，可以将所有对象的创建和依赖关系维护都交给spring管理）**IoC**
+2. spring支持**aop**编程（spring提供面向切面编程，可以很方便的实现对程序进行权限拦截和运行监控等功能）
+3. 声明式事务的支持（通过配置就完成对事务的支持，不需要手动编程）
+4. 方便程序的测试，spring 对junit支持，可以通过注解方便的测试spring 程序
+5. 方便集成各种优秀的框架（Hibernate 、Mybatis、Redis、Ehcache、Quartz、RabbitMQ、Shiro 等）
+6. 降低javaEE API的使用难度（Spring 对javaEE开发中非常难用的一些API 例如JDBC, javaMail, 远程调用等，都提供了封装，是这些API应用难度大大降低）
+
+**Spring是一个轻量级控制反转(IoC)和面向切面(AOP)的容器框架。**
+
+### 缺点：
+
+1. 大量反射，运行效率低了。
+2. spring像一个胶水，将框架黏在一起，后面拆分的话就不容易拆分了。
+3. 配置繁琐(spring boot简化了许多配置，”约定优于配置“)
+
+### 组成模块：
+
+Spring框架包含组织为约20个模块的功能。这些模块分为核心容器IoC，数据访问/集成，Web，AOP（面向切面的编程），检测，消息传递和测试，如下图所示。
+
+![](img\spring-overview.png)
+
+如果使用[Maven](https://maven.apache.org/)进行依赖管理，您甚至无需显式提供日志记录依赖。例如，要创建应用程序上下文并使用依赖项注入来配置应用程序，您的Maven依赖项将如下所示：
+
+```xml
+<dependencies>
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>4.3.28.RELEASE</version>
+        <scope>runtime</scope>
+    </dependency>
+</dependencies>
+```
+
+# 2.Spring IoC容器
+
+​	**控制反转**（Inversion of Control，缩写为**IoC**），是[面向对象编程](https://baike.baidu.com/item/面向对象编程)中的一种设计原则，可以用来减低计算机代码之间的[耦合度](https://baike.baidu.com/item/耦合度)。其中最常见的方式叫做**依赖注入**（Dependency Injection，简称**DI**），还有一种方式叫“依赖查找”（Dependency Lookup）。通过控制反转，对象在被创建的时候，由一个调控系统内所有对象的外界实体将其所依赖的对象的引用传递给它。也可以说，依赖被注入到对象中。IoC/DI
+
+spring实现:通过反射获取**set方法**或者**构造方法**，注入所要依赖的对象。 set注入/构造注入
+
+下图是Spring工作方式的高级视图。您的应用程序类与配置元数据结合在一起，以便在`ApplicationContext`创建和初始化之后，您便拥有了完整配置的可执行系统或应用程序。
+
+![](img\container-magic.png)
+
+
+
+### 1.配置文件一般格式：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+<!--    <bean id="dao" class="com.huihe.dao.impl.OracleDao">-->
+<!--    </bean>-->
+<!--   静态工厂  -->
+<!--    <bean id="dao" class="com.huihe.factory.DaoFactory" factory-method="getInstance">-->
+<!--    </bean>-->
+	<!--   实例工厂  -->
+    <bean id="factory" class="com.huihe.factory.DaoFactory">
+        <!-- collaborators and configuration for this bean go here -->
+    </bean>
+
+    <bean id="dao" factory-bean="factory" factory-method="getInstance">
+        <!-- collaborators and configuration for this bean go here -->
+    </bean>
+</beans>
+```
+
+2.读取配置文件的Bean
+
+```java
+ApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");
+dao = (Dao) context.getBean("dao");
+dao.insert();
 ```
 

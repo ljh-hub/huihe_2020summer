@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+<!--    <bean id="dao" class="com.huihe.dao.impl.OracleDao">-->
+<!--        &lt;!&ndash; collaborators and configuration for this bean go here &ndash;&gt;-->
+<!--    </bean>-->
+
+<!--    <bean id="dao" class="com.huihe.factory.DaoFactory" factory-method="getInstance">-->
+<!--        &lt;!&ndash; collaborators and configuration for this bean go here &ndash;&gt;-->
+<!--    </bean>-->
+
+    <!-- more bean definitions go here -->
+
+    <bean id="factory" class="com.huihe.factory.DaoFactory">
+        <!-- collaborators and configuration for this bean go here -->
+    </bean>
+
+    <bean id="dao" factory-bean="factory" factory-method="getInstance">
+        <!-- collaborators and configuration for this bean go here -->
+    </bean>
+</beans>
