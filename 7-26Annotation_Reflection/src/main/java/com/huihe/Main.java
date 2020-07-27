@@ -5,11 +5,14 @@ import com.huihe.annotation.MyAnnotation;
 import com.huihe.bean.User;
 import org.junit.Test;
 
+import java.io.*;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.rmi.Remote;
+import java.util.Properties;
 
 public class Main {
 
@@ -40,15 +43,15 @@ public class Main {
 
     @Test
     public void test() throws ClassNotFoundException {
-//        Class<User> c1 = User.class;
-//        User user = new User();
-//        Class<? extends User> c2 = user.getClass();
-//        Class<?> c3 = Class.forName("com.huihe.bean.User");
-//        Class<?> c4 = Class.forName("com.huihe.bean.User");
-//        System.out.println(c1);
-//        System.out.println(c2);
-//        System.out.println(c3);
-//        System.out.println(c1 == c2 && c1 == c3 && c1 == c4);
+        Class<User> c1 = User.class;
+        User user = new User();
+        Class<? extends User> c2 = user.getClass();
+        Class<?> c3 = Class.forName("com.huihe.bean.User");
+        Class<?> c4 = Class.forName("com.huihe.bean.User");
+        System.out.println(c1);
+        System.out.println(c2);
+        System.out.println(c3);
+        System.out.println(c1 == c2 && c1 == c3 && c1 == c4);
     }
 
 
@@ -82,6 +85,37 @@ public class Main {
             field.setAccessible(true);
             System.out.println(annotation.value());
             field.set(instance, annotation.value());
+        }
+        System.out.println(instance);
+    }
+    @Test
+    public void test4() throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+        Properties properties = new Properties();
+        InputStream inputStream = this.getClass().getResourceAsStream("/bean.properties");
+        properties.load(inputStream);
+        String clz = properties.getProperty("class", "");
+        Class<?> c = Class.forName(clz);
+        Object instance = c.newInstance();
+        for(Field field : c.getDeclaredFields()){
+            field.setAccessible(true);
+            field.set(instance, properties.getProperty(field.getName(),""));
+        }
+        System.out.println(instance);
+    }
+
+
+    @Test
+    public void test5() throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+        Properties properties = new Properties();
+        InputStream inputStream = this.getClass().getResourceAsStream("/bean.properties");
+        properties.load(inputStream);
+        String str = properties.getProperty("class", "");
+        Class<?> c = Class.forName(str);
+        Object instance = c.newInstance();
+        Field[] fields = c.getDeclaredFields();
+        for(Field field : fields){
+            field.setAccessible(true); //跳过安全检查 暴力反射
+            field.set(instance, properties.getProperty(field.getName(),""));
         }
         System.out.println(instance);
     }

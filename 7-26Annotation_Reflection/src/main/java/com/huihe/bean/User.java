@@ -4,7 +4,6 @@ import com.huihe.annotation.MyAnnotation;
 
 public class User {
     //Flied
-
     @MyAnnotation("hxj")
     private String username;
 
