@@ -409,11 +409,487 @@ spring实现:通过反射获取**set方法**或者**构造方法**，注入所�
 </beans>
 ```
 
-2.读取配置文件的Bean
+#### 读取配置文件的Bean
 
 ```java
 ApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");
 dao = (Dao) context.getBean("dao");
 dao.insert();
 ```
+
+### 2.构造器注入
+
+#### 1.准备一个类User（构造方法）
+
+```java
+public class User {
+    private String username;
+    private Date birthday;
+    
+	//构造方法是关键
+    public User(String username, Date birthday) {
+        this.username = username;
+        this.birthday = birthday;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "username='" + username + '\'' +
+                ", birthday=" + birthday +
+                '}';
+    }
+}
+```
+
+#### 2.xml配置文件的三种构造器注入方式
+
+```xml
+	<!--  构造器注入  -->
+    <bean id="myDate" class="java.util.Date"/>
+
+    <bean id="user1" class="com.huihe.model.User">
+        <constructor-arg>
+            <ref bean="myDate"/>
+        </constructor-arg>
+        <constructor-arg>
+            <value>hxj</value>
+        </constructor-arg>
+    </bean>
+
+    <bean id="user2" class="com.huihe.model.User">
+        <constructor-arg name="username" value="hxj"/>
+        <constructor-arg name="birthday" ref="myDate"/>
+    </bean>
+
+    <bean id="user3" class="com.huihe.model.User">
+        <constructor-arg index="0" value="hxj"/>
+        <constructor-arg index="1" ref="myDate"/>
+    </bean>
+```
+
+#### 3.测试程序
+
+```java
+ApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");
+User user1 = (User) context.getBean("user1");
+User user2 = context.getBean("user2", User.class);
+User user3 = context.getBean("user3", User.class);
+System.out.println(user1);
+System.out.println(user2);
+System.out.println(user3);
+```
+
+### 3.set注入
+
+#### 1.准备User类（setter方法）
+
+```java
+public class User {
+    private String username;
+    private Date birthday;
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setBirthday(Date birthday) {
+        this.birthday = birthday;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "username='" + username + '\'' +
+                ", birthday=" + birthday +
+                '}';
+    }
+}
+```
+
+#### 2.xml的配置
+
+```xml
+<!--  set注入  -->
+    <bean id="myDate" class="java.util.Date"/>
+
+    <bean id="user" class="com.huihe.model.User">
+        <property name="username"  value=""/>
+        <property name="birthday"> 
+        	<null/>
+        </property>
+    </bean>
+```
+
+#### 3.测试程序
+
+```java
+ApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");
+User user = (User) context.getBean("user");
+System.out.println(user);
+```
+
+### 4.p命名空间(p-**) property
+
+#### 1.User类同set注入
+
+#### 2.xml中加入p命名空间约束及配置
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd">
+	 <!--  p命名空间-->
+    <bean id="myDate" class="java.util.Date"/>
+    <bean id="user" class="com.huihe.model.User"
+          p:username="hxj" p:birthday-ref="myDate"/>
+</beans>
+```
+
+#### 3.测试程序同set注入
+
+### 5.c命名空间(c-**) constructor
+
+#### 1.User类同构造器注入
+
+#### 2.xml中加入c命名空间约束及两种配置方法
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:c="http://www.springframework.org/schema/c"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd">
+       <!--  p命名空间-->
+        <bean id="myDate" class="java.util.Date"/>
+        <bean id="user1" class="com.huihe.model.User"
+         c:_0="hxj" c:_1-ref="myDate"/>
+
+        <bean id="user2" class="com.huihe.model.User"
+          c:username="hxj" c:birthday-ref="myDate"/>
+</beans>
+```
+
+#### 3.测试程序
+
+```java
+ApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");
+User user1 = (User) context.getBean("user1");
+User user2 = (User) context.getBean("user2");
+System.out.println(user1);
+System.out.println(user2);
+```
+
+### 6.懒加载
+
+在bean标签的属性中 设置如下属性即可为懒加载  默认为false
+
+```xml
+lazy-init="true"
+```
+
+### 7.Bean作用域(Scope)
+
+| Scope                                                        | Description                                                  |
+| :----------------------------------------------------------- | :----------------------------------------------------------- |
+| [singleton](https://docs.spring.io/spring/docs/5.2.8.RELEASE/spring-framework-reference/core.html#beans-factory-scopes-singleton) | (Default) Scopes a single bean definition to a single object instance for each Spring IoC container. |
+| [prototype](https://docs.spring.io/spring/docs/5.2.8.RELEASE/spring-framework-reference/core.html#beans-factory-scopes-prototype) | Scopes a single bean definition to any number of object instances. |
+| [request](https://docs.spring.io/spring/docs/5.2.8.RELEASE/spring-framework-reference/core.html#beans-factory-scopes-request) | Scopes a single bean definition to the lifecycle of a single HTTP request. That is, each HTTP request has its own instance of a bean created off the back of a single bean definition. Only valid in the context of a web-aware Spring `ApplicationContext`. |
+| [session](https://docs.spring.io/spring/docs/5.2.8.RELEASE/spring-framework-reference/core.html#beans-factory-scopes-session) | Scopes a single bean definition to the lifecycle of an HTTP `Session`. Only valid in the context of a web-aware Spring `ApplicationContext`. |
+| [application](https://docs.spring.io/spring/docs/5.2.8.RELEASE/spring-framework-reference/core.html#beans-factory-scopes-application) | Scopes a single bean definition to the lifecycle of a `ServletContext`. Only valid in the context of a web-aware Spring `ApplicationContext`. |
+| [websocket](https://docs.spring.io/spring/docs/5.2.8.RELEASE/spring-framework-reference/web.html#websocket-stomp-websocket-scope) | Scopes a single bean definition to the lifecycle of a `WebSocket`. Only valid in the context of a web-aware Spring `ApplicationContext`. |
+
+|                             范围                             | 描述                                                         |
+| :----------------------------------------------------------: | :----------------------------------------------------------- |
+|                             单例                             | （默认）为每个Spring IoC容器将单个bean定义的作用域限定为单个对象实例。 |
+| [原型](https://docs.spring.io/spring/docs/5.2.8.RELEASE/spring-framework-reference/core.html#beans-factory-scopes-prototype) | 将单个bean定义的作用域限定为任意数量的对象实例。             |
+| [请求](https://docs.spring.io/spring/docs/5.2.8.RELEASE/spring-framework-reference/core.html#beans-factory-scopes-request) | 将单个bean定义的范围限定为单个HTTP请求的生命周期。也就是说，每个HTTP请求都有一个在单个bean定义后面创建的bean实例。仅在可感知网络的Spring上下文中有效`ApplicationContext`。 |
+| [会议](https://docs.spring.io/spring/docs/5.2.8.RELEASE/spring-framework-reference/core.html#beans-factory-scopes-session) | 将单个bean定义的范围限定为HTTP的生命周期`Session`。仅在可感知网络的Spring上下文中有效`ApplicationContext`。 |
+| [应用](https://docs.spring.io/spring/docs/5.2.8.RELEASE/spring-framework-reference/core.html#beans-factory-scopes-application) | 将单个bean定义的作用域限定为的生命周期`ServletContext`。仅在可感知网络的Spring上下文中有效`ApplicationContext`。 |
+| [网络套接字](https://docs.spring.io/spring/docs/5.2.8.RELEASE/spring-framework-reference/web.html#websocket-stomp-websocket-scope) | 将单个bean定义的作用域限定为的生命周期`WebSocket`。仅在可感知网络的Spring上下文中有效`ApplicationContext`。 |
+
+request、session、application、websocket都是web专用的，我们现在只看singleton和prototype
+
+这都是设置在bean标签的scope属性的值,
+
+singleton为单例，即只有一份实例,每次取到的都是同一个对象
+
+![](img/singleton.png)
+
+prototype为原型，即有多个实例，每次取到的都是新的对象
+
+![](img/prototype.png)
+
+### 8.自动注入
+
+bean标签的属性autowire
+
+| 模式          | 说明                                                         |
+| :------------ | :----------------------------------------------------------- |
+| `no`          | （默认）无自动装配。Bean引用必须由`ref`元素定义。对于大型部署，不建议更改默认设置，因为显式指定协作者可提供更好的控制和清晰度。在某种程度上，它记录了系统的结构。 |
+| `byName`      | 按属性名称自动布线。Spring寻找与需要自动装配的属性同名的bean。例如，如果一个bean定义被设置为按名称自动装配并且包含一个`master`属性（即它具有一个 `setMaster(..)`方法），那么Spring将查找一个名为的bean定义`master`并使用它来设置该属性。 |
+| `byType`      | 如果容器中恰好存在一个该属性类型的bean，则使该属性自动连接。如果存在多个错误，则将引发致命异常，这表明您不能`byType`对该bean 使用自动装配。如果没有匹配的bean，则什么都不会发生（未设置该属性）。 |
+| `constructor` | 类似于`byType`但适用于构造函数参数。如果容器中不存在构造函数参数类型的一个bean，则将引发致命错误。 |
+
+#### 1.准备User类和Dog类
+
+- Date类的按类型和名称注入有问题，我还没想明白
+
+```java
+public class User {
+    private String username;
+    private Dog dog;
+    
+    public User(){
+        System.out.println("默认构造");
+    }
+
+    public User(Dog dog) {
+        System.out.println("dog");
+        this.dog = dog;
+    }
+
+    public User(String username, Dog dog) {
+        System.out.println("username and dog");
+        this.username = username;
+        this.dog = dog;
+    }
+	
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setDog(Dog dog) {
+        this.dog = dog;
+    }
+
+    public Dog getDog() {
+        return dog;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "username='" + username + '\'' +
+                ", dog=" + dog +
+                '}';
+    }
+}
+
+public class Dog {
+    public void wang(){
+        System.out.println("汪。。。");
+    }
+}
+```
+
+#### 2.按名称自动注入的xml
+
+```xml
+<bean id="dog" class="com.huihe.model.Dog"/>
+<bean id="user" class="com.huihe.model.User" autowire="byName">
+    <property name="username"  value="hxj"/>
+</bean>
+```
+
+#### 3.按类型自动注入的xml
+
+```xml
+<bean id="dog" class="com.huihe.model.Dog"/>
+<bean id="user" class="com.huihe.model.User" autowire="byType">
+    <property name="username"  value="hxj"/>
+</bean>
+```
+
+#### 4.按构造自动注入的xml
+
+```xml
+<bean id="dog" class="com.huihe.model.Dog"/>
+<bean id="username" class="java.lang.String"/>
+    <bean id="user" class="com.huihe.model.User" autowire="constructor">
+	</bean>
+```
+
+#### 5.测试程序
+
+```java
+ApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");
+User user = (User) context.getBean("user");
+System.out.println(user);
+user.getDog().wang();
+```
+
+### 9.引入注解配置IoC
+
+#### 1.xml约束以及开启注解支持
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:annotation-config/>
+	<bean id="dog" class="com.huihe.model.Dog"/>
+    <bean id="user" class="com.huihe.model.User"/>
+</beans>
+```
+
+#### 2.User类和Dog类
+
+```java
+public class User {
+
+    private String username;
+
+    @Autowired //当属性required=false时，找不到也不会报错  先根据type 后根据id
+    @Qualifier("dog") //指定具体名称
+    @Resource(name = "dog") //相当于@Autowired和@Qualifier的组合，默认是Autowired设置了name会按照名称，先name后type
+    private Dog dog;
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "username='" + username + '\'' +
+                ", dog=" + dog +
+                '}';
+    }
+}
+public class Dog {
+    public void wang(){
+        System.out.println("汪。。。");
+    }
+}
+```
+
+#### 3.测试程序
+
+```java
+ApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");
+User user = (User) context.getBean("user");
+System.out.println(user);
+```
+
+### 10.不在xml中注册bean
+
+#### 1.xml文件
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:annotation-config/>
+    <context:component-scan base-package="com.huihe"/>
+</beans>
+```
+
+#### 2.User类和Dog类
+
+```java
+@Component
+public class User {
+
+    @Value("hxj")
+    private String username;
+
+    @Autowired
+    private Dog dog;
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "username='" + username + '\'' +
+                ", dog=" + dog +
+                '}';
+    }
+}
+
+@Component
+public class Dog {
+    public void wang(){
+        System.out.println("汪。。。");
+    }
+}
+```
+
+#### 3.测试程序
+
+```java
+ApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");
+User user = (User) context.getBean("user");
+System.out.println(user);
+```
+
+### 11.纯注解javaConfig
+
+#### 1.新建一个配置类
+
+```java
+@Configuration
+@ComponentScan("com.huihe.model")
+public class MyConfig {
+    @Bean
+    public User getUser(){
+        return new User();
+    }
+}
+```
+
+#### 2.User类和Dog类
+
+```java
+public class User {
+
+    @Value("hxj")
+    private String username;
+
+    @Autowired
+    private Dog dog;
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "username='" + username + '\'' +
+                ", dog=" + dog +
+                '}';
+    }
+}
+
+@Component
+public class Dog {
+    public void wang(){
+        System.out.println("汪。。。");
+    }
+}
+```
+
+#### 3.测试程序
+
+```java
+ApplicationContext context = new AnnotationConfigApplicationContext(MyConfig.class);
+User user = (User) context.getBean("getUser");
+System.out.println(user);
+```
+
+# 3.Spring AOP
+
+## 1.前置-代理模式
+
+![img](img\2.png)
+
+### 1.静态代理
 
