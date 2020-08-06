@@ -6,14 +6,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="annotation_reflection" />
         <module name="7-27Spring-IoC" />
+        <module name="8-6SpringAOP" />
+        <module name="annotation_reflection" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel target="8">
-      <module name="7-27Spring" target="1.5" />
-      <module name="7-27Spring_IoC" target="1.8" />
-      <module name="untitled" target="1.8" />
-    </bytecodeTargetLevel>
+    <bytecodeTargetLevel target="8" />
   </component>
 </project>

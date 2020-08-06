@@ -529,6 +529,8 @@ User user = (User) context.getBean("user");
 System.out.println(user);
 ```
 
+
+
 ### 4.p命名空间(p-**) property
 
 #### 1.User类同set注入
@@ -550,6 +552,8 @@ System.out.println(user);
 ```
 
 #### 3.测试程序同set注入
+
+
 
 ### 5.c命名空间(c-**) constructor
 
@@ -584,7 +588,107 @@ System.out.println(user1);
 System.out.println(user2);
 ```
 
-### 6.懒加载
+
+
+### 6.注入集合类型
+
+#### 1.xml配置
+
+```xml
+<bean id="user" class="com.huihe.model.User">
+    <property name="config">
+        <props>
+            <prop key="name">hxj</prop>
+            <prop key="password">123</prop>
+        </props>
+    </property>
+    <property name="foods">
+        <array>
+            <value>水果</value>
+            <value>面</value>
+            <value>米</value>
+        </array>
+    </property>
+
+    <property name="hobbies">
+        <list>
+            <value>吃饭</value>
+            <value>打豆豆</value>
+            <value>睡觉</value>
+            <value>睡觉</value>
+        </list>
+    </property>
+    <property name="plays">
+        <set>
+            <value>足球</value>
+            <value>蓝球</value>
+            <value>蓝球</value>
+        </set>
+    </property>
+    <property name="plans">
+        <map>
+            <entry key="周一" value="上班"/>
+            <entry key="周二" value="上班"/>
+            <entry key="周二" value="睡觉"/>
+        </map>
+    </property>
+</bean>
+```
+
+#### 2.User类
+
+```java
+public class User {
+    String[] foods;
+    List<String> hobbies;
+    Set<String> plays;
+    Map<String, String> plans;
+    Properties config;
+
+    public void setFoods(String[] foods) {
+        this.foods = foods;
+    }
+
+    public void setHobbies(List<String> hobbies) {
+        this.hobbies = hobbies;
+    }
+
+    public void setPlays(Set<String> plays) {
+        this.plays = plays;
+    }
+
+    public void setPlans(Map<String, String> plans) {
+        this.plans = plans;
+    }
+
+    public void setConfig(Properties config) {
+        this.config = config;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "hobbies=" + hobbies +
+                ", plays=" + plays +
+                ", foods=" + Arrays.toString(foods) +
+                ", plans=" + plans +
+                ", config=" + config +
+                '}';
+    }
+}
+```
+
+#### 3.测试程序
+
+```java
+ApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");
+User user = (User) context.getBean("user");
+System.out.println(user);
+```
+
+
+
+### 7.懒加载
 
 在bean标签的属性中 设置如下属性即可为懒加载  默认为false
 
@@ -592,7 +696,7 @@ System.out.println(user2);
 lazy-init="true"
 ```
 
-### 7.Bean作用域(Scope)
+### 8.Bean作用域(Scope)
 
 | Scope                                                        | Description                                                  |
 | :----------------------------------------------------------- | :----------------------------------------------------------- |
@@ -624,7 +728,7 @@ prototype为原型，即有多个实例，每次取到的都是新的对象
 
 ![](img/prototype.png)
 
-### 8.自动注入
+### 9.自动注入
 
 bean标签的属性autowire
 
@@ -723,7 +827,7 @@ System.out.println(user);
 user.getDog().wang();
 ```
 
-### 9.引入注解配置IoC
+### 10.引入注解配置IoC
 
 #### 1.xml约束以及开启注解支持
 
@@ -778,7 +882,7 @@ User user = (User) context.getBean("user");
 System.out.println(user);
 ```
 
-### 10.不在xml中注册bean
+### 11.xml中启用注解
 
 #### 1.xml文件
 
@@ -834,7 +938,7 @@ User user = (User) context.getBean("user");
 System.out.println(user);
 ```
 
-### 11.纯注解javaConfig
+### 12.纯注解javaConfig
 
 #### 1.新建一个配置类
 
@@ -891,5 +995,341 @@ System.out.println(user);
 
 ![img](img\2.png)
 
+在代理模式（Proxy Pattern）中，一个类代表另一个类的功能。这种类型的设计模式属于结构型模式。
+
+在代理模式中，我们创建具有现有对象的对象，以便向外界提供功能接口。
+
+我们将创建一个接口和实现了该接口的实体类。
+
+我们的客户类使用代理来获取要加载的委托类对象，并按照需求进行显示。
+
 ### 1.静态代理
 
+接口和代理全部手动编码实现。
+
+#### 1.接口
+
+```java
+public interface UserService {
+    void insert();
+
+    void select();
+
+    void delete();
+
+    void update();
+}
+```
+
+#### 2.委托类
+
+```java
+public class UserServiceImpl implements UserService {
+
+    @Override
+    public void insert() {
+        System.out.println("insert");
+    }
+
+    @Override
+    public void select() {
+        System.out.println("select");
+    }
+
+    @Override
+    public void delete() {
+        System.out.println("delete");
+    }
+
+    @Override
+    public void update() {
+        System.out.println("update");
+    }
+}
+```
+
+#### 3.代理类
+
+```java
+public class UserServiceProxy implements UserService {
+
+    private UserService userService;
+
+    public UserServiceProxy(UserService userService){
+        this.userService = userService;
+    }
+
+    @Override
+    public void insert() {
+        log("insert");
+        userService.insert();
+    }
+
+    @Override
+    public void select() {
+        log("select");
+        userService.select();
+    }
+
+    @Override
+    public void delete() {
+        log("delete");
+        userService.delete();
+    }
+
+    @Override
+    public void update() {
+        log("update");
+        userService.update();
+    }
+
+    private void log(String msg){
+        System.out.println("[Info] "+new SimpleDateFormat("yyyy-MM-dd").format(new Date()) +" 执行了"+msg+"方法");
+    }
+}
+```
+
+增加了公共得日志记录功能
+
+#### 4.测试程序
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        UserServiceImpl userService = new UserServiceImpl();
+        UserServiceProxy proxy = new UserServiceProxy(userService);
+        proxy.delete();
+    }
+}
+```
+
+#### 5.总结
+
+优点：可以做到在符合开闭原则的情况下对目标对象进行功能扩展。
+
+缺点：我们得为每一个服务都得创建代理类，工作量太大，不易管理。同时接口一旦发生改变，代理类也得相应修改。  
+
+### 2.动态代理
+
+不需要手动的创建代理类，只需要编写一个动态处理器，真正的代理对象由JDK再运行时为我们动态的来创建。
+
+#### 1.接口
+
+同静态代理
+
+#### 2.委托类
+
+同静态代理
+
+#### 3.动态处理器
+
+```java
+public class ProxyHandler implements InvocationHandler {
+
+    private Object object;
+    public ProxyHandler(Object object){
+        this.object = object;
+    }
+
+    public Object getProxy(){
+        return Proxy.newProxyInstance(this.getClass().getClassLoader(),
+                new Class[]{UserService.class}, this);
+    }
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        System.out.println("[info] "+new SimpleDateFormat("yyyy-MM-dd").format(new Date()) +" 执行了"+method.getName()+"方法。");
+        Object result = method.invoke(object, args);
+        return result;
+    }
+}
+```
+
+#### 4.测试程序
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        UserService userService = new UserServiceImpl();
+        ProxyHandler handler = new ProxyHandler(userService);
+        UserService proxy = (UserService)handler.getProxy();
+        proxy.delete();
+    }
+}
+```
+
+#### 5.总结
+
+代理对象不需要实现接口,但是目标对象一定要实现接口,否则不能用动态代理
+
+## 2.AOP概念
+
+AOP （Aspect Oriented Programming ）是一种编程思想，是面向对象编程（OOP）的一种补充。面向对象编程将程序抽象成各个层次的对象，而面向切面编程是将程序抽象成各个切面。
+
+1. 切面（Aspect）：是对横切逻辑的抽象，一个切面由通知和切点两部分组成。在实际应用中，切面被定义成一个类。
+2. 通知（Advice）：是横切逻辑的具体实现。在实际应用中，通知被定义成切面类中的一个方法，方法体内的代码就是横切代码。通知的分类：以目标方法为参照点，根据切入方位的不同，可分为前置通知（Before）、后置通知（AfterReturning）、异常通知（AfterThrowing）、最终通知（After）与环绕通知（Around）5种。
+3. 切点（Pointcut）：用于说明将通知织入到哪个方法上，它是由切点表达式来定义的。
+4. 目标对象（Target）：是指那些即将织入切面的对象。这些对象中已经只剩下干干净净的核心业务逻辑的代码了，所有的横切逻辑的代码都等待 AOP 框架的织入。
+5. 代理对象（Proxy）：是指将切面应用到目标对象之后由 AOP 框架所创建的对象。可以简单地理解为，代理对象的功能等于目标对象的核心业务逻辑功能加上横切逻辑功能，代理对象对使用者而言是透明的。
+6. 织入（Weaving）：是指将切面应用到目标对象从而创建一个新的代理对象的过程。
+
+
+
+使用AOP织入，需要导入依赖包
+
+```xml
+<dependency>
+    <groupId>org.aspectj</groupId>
+    <artifactId>aspectjweaver</artifactId>
+    <version>1.9.6</version>
+</dependency>
+```
+
+
+
+## 3.通过xml配置实现
+
+### 1.方式一、使用Spring的API接口
+
+#### 1.UserSevice和Impl同上
+
+#### 2.Log类
+
+```java
+public class Log implements MethodBeforeAdvice {
+    @Override
+    public void before(Method method, Object[] objects, Object o) throws Throwable {
+        System.out.println(o.getClass().getName()+"的"+method.getName()+"方法执行了。");
+    }
+}
+```
+
+以前置通知为例
+
+#### 3.xml配置
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/aop/spring-aop.xsd">
+<!--注册bean-->
+    <bean id="userService" class="com.huihe.service.impl.UserServiceImpl"/>
+    <bean id="log" class="com.huihe.aop.Log"/>
+<!--配置aop-->
+    <aop:config>
+        <!--切入点-->
+        <aop:pointcut id="pointcut" expression="execution(* com.huihe.service.impl.UserServiceImpl.*(..))"/>
+		<!--执行环绕增强-->
+        <aop:advisor advice-ref="log" pointcut-ref="pointcut"/>
+    </aop:config>
+</beans>
+```
+
+#### 4.测试程序
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        ApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");
+        UserService service = context.getBean("userService", UserService.class);
+        service.delete();
+    }
+}
+```
+
+### 2.方式二、自定义切面来实现AOP
+
+#### 1.UserSevice和Impl同上
+
+#### 2.Log类
+
+```java
+public class Log{
+    public void before(){
+        System.out.println("====方法执行前");
+    }
+
+    public void after(){
+        System.out.println("方法执行后====");
+    }
+}
+```
+
+#### 3.xml配置
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/aop/spring-aop.xsd">
+<!--注册bean-->
+    <bean id="userService" class="com.huihe.service.impl.UserServiceImpl"/>
+    <bean id="log" class="com.huihe.aop.Log"/>
+<!--配置aop-->
+    <aop:config>
+        <aop:aspect ref="log">
+            <!--切入点-->
+            <aop:pointcut id="pointcut" expression="execution(* com.huihe.service.impl.UserServiceImpl.*(..))"/>
+            <!--通知-->
+            <aop:before method="before" pointcut-ref="pointcut"/>
+            <aop:after method="after" pointcut-ref="pointcut"/>
+        </aop:aspect>
+    </aop:config>
+</beans>
+```
+
+#### 4.测试程序同上
+
+
+
+## 4.通过注解实现
+
+### 1.UserSevice和Impl同上
+
+### 2.Log类
+
+```java
+@Aspect //标识切面
+public class Log{
+    
+    @Before("execution(* com.huihe.service.impl.UserServiceImpl.*(..))")
+    public void before(){
+        System.out.println("====方法执行前");
+    }
+    @After("execution(* com.huihe.service.impl.UserServiceImpl.*(..))")
+    public void after(){
+        System.out.println("方法执行后====");
+    }
+}
+```
+
+### 3.xml配置
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/aop/spring-aop.xsd">
+    <!--注册bean-->
+    <bean id="userService" class="com.huihe.service.impl.UserServiceImpl"/>
+    <bean id="log" class="com.huihe.aop.Log"/>
+
+    <!--开启注解支持-->
+    <aop:aspectj-autoproxy/>
+</beans>
+```
+
+### 4.测试程序同上
